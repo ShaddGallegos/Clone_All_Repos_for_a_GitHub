@@ -9,6 +9,10 @@
         name: tree
         state: present
 
+    - name: Get the base directory name
+      command: basename "{{ playbook_dir }}"
+      register: base_dir_name
+
     - name: Run tree command to get directory structure
       command: tree -H . -L 2
       register: tree_output
@@ -17,5 +21,8 @@
 
     - name: Write tree output to markdown file
       copy:
-        dest: "{{ playbook_dir }}/inventory.md"
-        content: "{{ tree_output.stdout }}"
+        dest: "{{ playbook_dir }}/{{ base_dir_name.stdout }}_inventory.md"
+        content: |
+          # Inventory of {{ base_dir_name.stdout }}
+          
+          {{ tree_output.stdout }}
