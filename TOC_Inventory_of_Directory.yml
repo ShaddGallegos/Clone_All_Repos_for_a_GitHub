@@ -21,8 +21,11 @@
 
     - name: Write tree output to markdown file
       copy:
-        dest: "{{ playbook_dir }}/{{ base_dir_name.stdout }}_inventory.md"
+        dest: "/tmp/{{ base_dir_name.stdout }}_inventory.md"
         content: |
           # Inventory of {{ base_dir_name.stdout }}
           
           {{ tree_output.stdout }}
+
+    - name: Move the markdown file to the base directory
+      command: mv /tmp/{{ base_dir_name.stdout }}_inventory.md "{{ playbook_dir }}/{{ base_dir_name.stdout }}_inventory.md"
