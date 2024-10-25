@@ -1,31 +1,38 @@
 ---
-- name: Create directory tree inventory
+- name: Create Table_of_Contents
   hosts: localhost
   gather_facts: no
+
+  vars_prompt:
+    - name: folder_path
+      prompt: "Enter the path of the folder to be run against"
+      private: no
+
   tasks:
     - name: Install required packages
       become: yes
-      apt:
+      dnf:
         name: tree
         state: present
 
     - name: Get the base directory name
-      command: basename "{{ playbook_dir }}"
+      command: basename "{{ folder_path }}"
       register: base_dir_name
 
     - name: Run tree command to get directory structure
       command: tree -H . -L 2
       register: tree_output
       args:
-        chdir: "{{ playbook_dir }}"
+        chdir: "{{ folder_path }}"
 
     - name: Write tree output to markdown file
       copy:
-        dest: "/tmp/{{ base_dir_name.stdout }}_inventory.md"
+        dest: "/tmp/{{ base_dir_name.stdout }}_Table_of_Contents.md"
         content: |
-          # Inventory of {{ base_dir_name.stdout }}
+          # Table_of_Contents of {{ base_dir_name.stdout }}
           
           {{ tree_output.stdout }}
 
     - name: Move the markdown file to the base directory
-      command: mv /tmp/{{ base_dir_name.stdout }}_inventory.md "{{ playbook_dir }}/{{ base_dir_name.stdout }}_inventory.md"
+      command: mv /tmp/{{ base_dir_name.stdout }}_Table_of_Contents.md "{{ folder_path }}/{{ base_dir_name.stdout }}_Table_of_Contents.md"
+
