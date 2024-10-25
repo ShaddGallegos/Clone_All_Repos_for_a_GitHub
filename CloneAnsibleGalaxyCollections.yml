@@ -1,0 +1,27 @@
+---
+- name: Clone all collections from Galaxy for a specific user
+  hosts: localhost
+  vars_prompt:
+    - name: "galaxy_user"
+      prompt: "Enter the Galaxy username"
+      private: no
+  tasks:
+    - name: Fetch list of collections for the user
+      uri:
+        url: "https://galaxy.ansible.com/api/v2/collections/?namespace={{ galaxy_user }}"
+        return_content: yes
+      register: collections_response
+
+    - name: Parse collection names
+      set_fact:
+        collection_names: "{{ collections_response.json.results | map(attribute='name') | list }}"
+
+    - name: Install collections
+      ansible.builtin.command:
+        cmd: "ansible-galaxy collection install {{ galaxy_user }}.{{ item }}"
+      loop: "{{ collection_names }}"
+
+    - name: Report installed collections
+      debug:
+        msg: "Installed collection {{ galaxy_user }}.{{ item }}"
+      loop: "{{ collection_names }}"
