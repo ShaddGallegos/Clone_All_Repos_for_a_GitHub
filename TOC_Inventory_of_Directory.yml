@@ -1,0 +1,21 @@
+---
+- name: Create directory tree inventory
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Install required packages
+      become: yes
+      apt:
+        name: tree
+        state: present
+
+    - name: Run tree command to get directory structure
+      command: tree -H . -L 2
+      register: tree_output
+      args:
+        chdir: "{{ playbook_dir }}"
+
+    - name: Write tree output to markdown file
+      copy:
+        dest: "{{ playbook_dir }}/inventory.md"
+        content: "{{ tree_output.stdout }}"
