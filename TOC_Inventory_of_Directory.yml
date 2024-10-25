@@ -29,7 +29,7 @@
       copy:
         dest: "/tmp/{{ base_dir_name.stdout }}_Table_of_Contents.md"
         content: |
-          # Table_of_Contents of {{ base_dir_name.stdout }}
+          # Table_of_Contents_of_{{ base_dir_name.stdout }}
           
           {{ tree_output.stdout }}
 
