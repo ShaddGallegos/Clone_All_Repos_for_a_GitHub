@@ -1,0 +1,65 @@
+<html>
+<head>
+  <title>Inventory of dir1</title>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; }
+    ul { list-style-type: none; margin-left: 20px; }
+    .directory { cursor: pointer; color: #007bff; }
+    .file { margin-left: 20px; color: #007bff; }
+    .hidden { display: none; }
+    a { text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+  <script>
+    function toggleVisibility(element) {
+      const childNodes = element.nextElementSibling;
+      if (childNodes) {
+        childNodes.style.display = childNodes.style.display === 'none' ? 'block' : 'none';
+      }
+    }
+
+    function generateTree(data) {
+      const ul = document.createElement('ul');
+      data.forEach(item => {
+        const li = document.createElement('li');
+        if (item.type === 'directory') {
+          li.className = 'directory';
+          li.textContent = item.name;
+          li.onclick = () => toggleVisibility(li);
+          li.appendChild(generateTree(item.contents));
+        } else {
+          li.className = 'file';
+          const link = document.createElement('a');
+          link.href = item.path;
+          link.textContent = item.name;
+          li.appendChild(link);
+        }
+        ul.appendChild(li);
+      });
+      return ul;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const treeData = [
+  {"type":"directory","name":".","contents":[
+    {"type":"directory","name":"dir2","contents":[
+      {"type":"directory","name":"dir3","contents":[
+        {"type":"directory","name":"dir4"},
+        {"type":"file","name":"file3"}
+      ]},
+      {"type":"file","name":"file2"}
+    ]},
+    {"type":"file","name":"file1"}
+  ]}
+
+];
+      const treeContainer = document.getElementById('directory-tree');
+      treeContainer.appendChild(generateTree(treeData));
+    });
+  </script>
+</head>
+<body>
+  <h1>Inventory of dir1</h1>
+  <div id="directory-tree"></div>
+</body>
+</html>
