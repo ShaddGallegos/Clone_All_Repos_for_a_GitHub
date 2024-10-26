@@ -1,5 +1,5 @@
 ---
-- name: Create directory tree Table_of_Contents_for_
+- name: Create directory tree Table_of_Contents
   hosts: localhost
   gather_facts: no
 
@@ -8,7 +8,7 @@
       prompt: "Enter the path of the folder to be run against"
       private: no
     - name: output_format
-      prompt: "Would you like the Table_of_Contents_for_ in HTML or Markdown?"
+      prompt: "Would you like the Table_of_Contents in HTML or Markdown?"
       private: no
       choices: ["HTML", "Markdown"]
 
@@ -36,7 +36,7 @@
 
     - name: Write tree output to file
       copy:
-        dest: "/tmp/{{ base_dir_name.stdout }}_Table_of_Contents_for_.{{ 'html' if output_format == 'HTML' else 'md' }}"
+        dest: "/tmp/{{ base_dir_name.stdout }}_Table_of_Contents.{{ 'html' if output_format == 'HTML' else 'md' }}"
         content: |
           {% if output_format == 'HTML' %}
           <html>
@@ -47,11 +47,10 @@
           </html>
           {% else %}
           # Table_of_Contents_for_{{ base_dir_name.stdout }}
-          
           {{ tree_output.stdout }}
           {% endif %}
 
     - name: Move the output file to the base directory
       command: >
-        mv /tmp/{{ base_dir_name.stdout }}_Table_of_Contents_for_.{{ 'html' if output_format == 'HTML' else 'md' }}
-        "{{ folder_path }}/{{ base_dir_name.stdout }}_Table_of_Contents_for_.{{ 'html' if output_format == 'HTML' else 'md' }}"
+        mv /tmp/{{ base_dir_name.stdout }}_Table_of_Contents.{{ 'html' if output_format == 'HTML' else 'md' }}
+        "{{ folder_path }}/{{ base_dir_name.stdout }}_Table_of_Contents.{{ 'html' if output_format == 'HTML' else 'md' }}"
