@@ -11,4 +11,7 @@
  * Report cloned repositories: This task uses the debug module to print a message for each cloned repository. The message includes the name of the repository.
 
 # Clone_Collections_for_Ansible_Galaxy
-#This playbook clones all the collections of a Ansible Galaxy,  user to a local directory. It prompts the user to enter the Ansible Galaxy,  username and uses the Ansible Galaxy,  API to fetch the list of collections. It then parses the URLs and clones them to the specified destination directory. Finally, it reports the cloned collections.
+#This playbook clones all the collections of a Ansible Galaxy,  user to a local directory. It prompts the user to enter the Ansible Galaxy,  username and uses the Ansible Galaxy,  API to fetch the list of collections. It then parses the URLs and clones them to the specified destination directory. Finally, it reports the cloned collections. 
+
+# Create_Table_of_Contents
+#I hate having to redo or update menus his script will generate a MD or HTML menu you just choose the full path of the directory and it will create the tree menu inside the target folder 
