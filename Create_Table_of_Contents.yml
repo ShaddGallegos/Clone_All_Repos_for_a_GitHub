@@ -1,0 +1,61 @@
+---
+- name: Create directory tree inventory
+  hosts: localhost
+  gather_facts: no
+
+  vars_prompt:
+    - name: folder_path
+      prompt: "Enter the path of the folder to be run against"
+      private: no
+    - name: output_format
+      prompt: "Would you like the inventory in HTML or Markdown?"
+      private: no
+
+  tasks:
+    - name: Validate output format
+      fail:
+        msg: "Invalid output format. Choose either 'HTML' or 'Markdown'."
+      when: output_format not in ['HTML', 'Markdown']
+
+    - name: Install required packages
+      become: yes
+      dnf:
+        name: tree
+        state: present
+
+    - name: Get the base directory name
+      command: basename "{{ folder_path }}"
+      register: base_dir_name
+
+    - name: Run tree command to get directory structure
+      command: >
+        {% if output_format == 'HTML' %}
+        tree -H . -L 2
+        {% else %}
+        tree -L 2 --noreport
+        {% endif %}
+      register: tree_output
+      args:
+        chdir: "{{ folder_path }}"
+
+    - name: Write tree output to file
+      copy:
+        dest: "/tmp/{{ base_dir_name.stdout }}_inventory.{{ 'html' if output_format == 'HTML' else 'md' }}"
+        content: |
+          {% if output_format == 'HTML' %}
+          <html>
+          <head><title>Inventory of {{ base_dir_name.stdout }}</title></head>
+          <body>
+          {{ tree_output.stdout }}
+          </body>
+          </html>
+          {% else %}
+          # Inventory of {{ base_dir_name.stdout }}
+          
+          {{ tree_output.stdout }}
+          {% endif %}
+
+    - name: Move the output file to the base directory
+      command: >
+        mv /tmp/{{ base_dir_name.stdout }}_inventory.{{ 'html' if output_format == 'HTML' else 'md' }}
+        "{{ folder_path }}/{{ base_dir_name.stdout }}_inventory.{{ 'html' if output_format == 'HTML' else 'md' }}"

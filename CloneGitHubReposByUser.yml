@@ -1,0 +1,51 @@
+---
+- name: Clone all repositories for a GitHub user
+  hosts: localhost
+  vars_prompt:
+    - name: "github_user"
+      prompt: "Enter the GitHub username"
+      private: false
+    - name: "target_dir"
+      prompt: "Enter the target directory to save repositories"
+      private: false
+      default: "{{ lookup('env', 'HOME') + '/Downloads/GIT' }}"
+  vars:
+    # Optionally provide a GitHub token via the GITHUB_TOKEN env var to increase rate limits
+    github_token: "{{ lookup('env', 'GITHUB_TOKEN') | default('') }}"
+  tasks:
+    - name: Fetch repositories pages (paginated, 100 per page)
+      ansible.builtin.uri:
+        url: "https://api.github.com/users/{{ github_user }}/repos?per_page=100&page={{ item }}"
+        return_content: true
+        status_code: [200, 404]
+        headers: "{{ {'Authorization': 'token ' + github_token} if github_token is defined and github_token | length > 0 else {} }}"
+      register: repo_pages
+      loop: "{{ query('sequence', 'start=1 end=10') }}"
+      failed_when: false
+
+    - name: Aggregate repository objects from pages
+      ansible.builtin.set_fact:
+        repo_list: "{{ repo_list | default([]) + (item.json if item.status == 200 else []) }}"
+      loop: "{{ repo_pages.results }}"
+
+    - name: Parse the repository URLs
+      ansible.builtin.set_fact:
+        repo_urls: "{{ repo_list | map(attribute='clone_url') | list }}"
+
+    - name: Ensure destination directory exists
+      ansible.builtin.file:
+        path: "{{ target_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Clone repositories (skip if already downloaded)
+      ansible.builtin.git:
+        repo: "{{ item }}"
+        dest: "{{ target_dir }}/{{ item | basename | replace('.git', '') }}"
+        update: false
+        accept_hostkey: true
+      loop: "{{ repo_urls }}"
+
+    - name: Report repository processing summary
+      ansible.builtin.debug:
+        msg: "Processed {{ repo_urls | length }} repositories; existing repos were skipped."
